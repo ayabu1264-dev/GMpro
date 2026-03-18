@@ -1,14 +1,17 @@
-name: ErTool Build
+name: ErTool Build and Export
 
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+  workflow_dispatch: # Supaya lu bisa klik tombol "Run" manual kalau mau
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    
+    # Menghilangkan warning Node.js 20 yang tadi lu dapet
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout Repository
@@ -22,6 +25,17 @@ jobs:
           arduino-cli core update-index --additional-urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
           arduino-cli core install esp32:esp32 --additional-urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
 
-      - name: Compile Sketch
+      - name: Compile Sketch to Binary
         run: |
-          arduino-cli compile --fqbn esp32:esp32:esp32da . --verbose
+          # Membuat folder output biar rapi
+          mkdir -p build_output
+          # Kompilasi dan simpan hasilnya ke folder build_output
+          arduino-cli compile --fqbn esp32:esp32:esp32da --output-dir ./build_output . --verbose
+
+      - name: Upload Firmware Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ErTool-V3-Firmware
+          # Mengambil semua file .bin yang ada di folder output
+          path: ./build_output/*.bin
+          retention-days: 5 # File bakal dihapus otomatis setelah 5 hari biar gak penuh
