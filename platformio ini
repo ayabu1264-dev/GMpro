@@ -1,0 +1,15 @@
+[env:esp32dev]
+platform = espressif32
+board = esp32dev
+framework = arduino
+monitor_speed = 115200
+
+# Pengaturan penting untuk Packet Injection & Stabilitas
+build_flags = 
+    -D CORE_DEBUG_LEVEL=0
+    -D CONFIG_WIFI_LWIP_ALLOCATION_FROM_SPIRAM=1
+    -D CONFIG_ESP32_WIFI_AMPDU_TX_ENABLED=0
+    -D CONFIG_ESP32_WIFI_AMPDU_RX_ENABLED=0
+
+# Memastikan partisi cukup untuk menyimpan password (LittleFS/SPIFFS)
+board_build.partitions = default.csv
