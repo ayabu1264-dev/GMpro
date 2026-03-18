@@ -1,0 +1,39 @@
+name: Build ESP32 Binaries
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # Memungkinkan menjalankan manual dari tab Actions
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install Arduino CLI
+        run: |
+          curl -fsSL https://githubusercontent.com | sh
+          echo "/home/runner/bin" >> $GITHUB_PATH
+
+      - name: Setup ESP32 Core
+        run: |
+          arduino-cli config init
+          arduino-cli config set board_manager.additional_urls https://githubusercontent.com
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32
+
+      - name: Compile Sketch
+        run: |
+          # Ganti 'sketch_name' dengan nama folder/file .ino Anda
+          arduino-cli compile --fqbn esp32:esp32:esp32 --output-dir ./build ./sketch_name
+
+      - name: Upload Binary Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ESP32-Nethercap-Binaries
+          path: ./build/*.bin
